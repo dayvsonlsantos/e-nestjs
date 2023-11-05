@@ -14,7 +14,7 @@ stop:
 # Remove the image created by the docker-compose."
 kill:
 	docker-compose down --volumes --remove-orphans
-	docker rmi nest_01_echarts-back
+	docker rmi nest_01_echarts-back-back-1
 
 # Run make stop and make kill.
 down:
