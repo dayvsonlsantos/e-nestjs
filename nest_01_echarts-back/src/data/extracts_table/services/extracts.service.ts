@@ -6,17 +6,17 @@ import { Extracts } from '../models/extracts.interface';
 import { from, Observable } from 'rxjs';
 
 @Injectable()
-export class DataService {
+export class ExtractsService {
     constructor(
         @InjectRepository(ExtractsEntity)
-        private readonly dataRepository: Repository<ExtractsEntity>
+        private readonly extractsRepository: Repository<ExtractsEntity>
     ){}
 
-    createData(extractData: Extracts): Observable<Extracts>{
-        return from(this.dataRepository.save(extractData));
+    createData(extract: Extracts): Observable<Extracts>{
+        return from(this.extractsRepository.save(extract));
     }
 
     findAll(): Observable<Extracts[]>{
-        return from(this.dataRepository.find());
+        return from(this.extractsRepository.find());
     }
 }
