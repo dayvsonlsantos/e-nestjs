@@ -12,9 +12,9 @@ export class ExtractsService {
         private readonly extractsRepository: Repository<ExtractsEntity>
     ){}
 
-    createData(extract: Extracts): Observable<Extracts>{
-        return from(this.extractsRepository.save(extract));
-    }
+    // createData(extract: Extracts): Observable<Extracts>{
+    //     return from(this.extractsRepository.save(extract));
+    // }
 
     findAll(): Observable<Extracts[]>{
         return from(this.extractsRepository.find());

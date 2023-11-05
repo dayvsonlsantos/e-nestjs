@@ -1,5 +1,4 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
-
 @Entity('extracts')
 export class ExtractsEntity {
     @PrimaryColumn()

@@ -7,10 +7,10 @@ import { Observable } from 'rxjs';
 export class ExtractsController {
     constructor(private extractsService: ExtractsService) { }
 
-    @Post()
-    create(@Body() extract: Extracts): Observable<Extracts> {
-        return this.extractsService.createData(extract)
-    }
+    // @Post()
+    // create(@Body() extract: Extracts): Observable<Extracts> {
+    //     return this.extractsService.createData(extract)
+    // }
 
     @Get()
     findAll(): Observable<Extracts[]> {
