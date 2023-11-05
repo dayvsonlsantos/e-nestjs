@@ -10,13 +10,17 @@ export class ExtractsService {
     constructor(
         @InjectRepository(ExtractsEntity)
         private readonly extractsRepository: Repository<ExtractsEntity>
-    ){}
+    ) { }
 
     // createData(extract: Extracts): Observable<Extracts>{
     //     return from(this.extractsRepository.save(extract));
     // }
 
-    findAll(): Observable<Extracts[]>{
-        return from(this.extractsRepository.find());
+    // findAll(): Observable<Extracts[]> {
+    //     return from(this.extractsRepository.find());
+    // }
+
+    async executarConsulta(query: string): Promise<any[]> {
+        return this.extractsRepository.query(query);
     }
 }
