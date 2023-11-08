@@ -20,7 +20,15 @@ export class ExtractsService {
     //     return from(this.extractsRepository.find());
     // }
 
-    async executarConsulta(query: string): Promise<any[]> {
+    async executarConsulta(query: string): Promise<string[]> {
+        return this.extractsRepository.query(query);
+    }
+
+    async serv_getTables(query: string): Promise<string[]> {
+        return this.extractsRepository.query(query);
+    }
+
+    async serv_getColumns(query: string): Promise<string[]> {
         return this.extractsRepository.query(query);
     }
 }
