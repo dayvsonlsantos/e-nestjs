@@ -23,8 +23,6 @@ export class ExtractsController {
 
         const hasOtherValue = userOptions.split(',').some(option => option !== 'doc_type');
 
-        console.log('test'+hasOtherValue)
-
         if (userOptions.includes('pages_process') && userOptions.includes('doc_type')) {
             query = `
                 SELECT 
@@ -41,10 +39,10 @@ export class ExtractsController {
                 FROM extracts AS e
                 GROUP BY e.doc_type
             `;
-        }  else if (userOptions.includes('pages_process') && userOptions.includes('name')) {
+        }  else if (userOptions.includes('doc_type') && userOptions.includes('name')) {
             query = `
                 SELECT 
-                    count(e.doc_type)       AS "Quantidade de documentos processados",
+                    count(e.doc_type)       AS "Documentos processados",
                     u.name                  AS "Usuário"
                 FROM 
                     extracts AS e
@@ -53,7 +51,7 @@ export class ExtractsController {
                 ON
                     u.id = e.user_id
                 GROUP BY
-                    e.doc_type
+                    u.name
             `
         }else if (hasOtherValue === false){
             query = `
