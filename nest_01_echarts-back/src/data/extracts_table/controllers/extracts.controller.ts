@@ -53,7 +53,59 @@ export class ExtractsController {
                 GROUP BY
                     u.name
             `
-        }else if (hasOtherValue === false){
+        } else if (userOptions.includes('pages_process') && userOptions.includes('name')) {
+            query = `
+                SELECT 
+                    sum(e.pages_process)        AS "Páginas Processadas",
+                    u.name                      AS "Usuário"
+                FROM 
+                    extracts AS e
+                JOIN
+                    users AS u
+                ON
+                    u.id = e.user_id
+                GROUP BY
+                    u.name
+            `
+        } else if (userOptions.includes('pages_process') && userOptions.includes('segment')) {
+            query = `
+                SELECT 
+                    sum(e.pages_process)        AS "Páginas Processadas",
+                    CASE
+                        WHEN u.segment = 'imobiliaria' THEN REPLACE (u.segment, 'imobiliaria', 'Imobiliária')
+                        WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
+                        WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
+                        WHEN u.segment = 'banco' THEN INITCAP (u.segment)
+                    END AS "Segmento"
+                FROM 
+                    extracts AS e
+                JOIN
+                    users AS u
+                ON
+                    u.id = e.user_id
+                GROUP BY
+                    u.segment
+            `
+        } else if (userOptions.includes('doc_type') && userOptions.includes('segment')) {
+            query = `
+                SELECT 
+                    count(e.doc_type)        AS "Documentos processados",
+                    CASE
+                        WHEN u.segment = 'imobiliaria' THEN REPLACE (u.segment, 'imobiliaria', 'Imobiliária')
+                        WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
+                        WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
+                        WHEN u.segment = 'banco' THEN INITCAP (u.segment)
+                    END AS "Segmento"
+                FROM 
+                    extracts AS e
+                JOIN
+                    users AS u
+                ON
+                    u.id = e.user_id
+                GROUP BY
+                    u.segment
+            `
+        } else if (hasOtherValue === false){
             query = `
                 SELECT 
                     count(e.doc_type)                         AS "Documentos processados",
