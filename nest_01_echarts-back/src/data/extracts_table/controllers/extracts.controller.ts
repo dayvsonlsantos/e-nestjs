@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ExtractsService } from '../services/extracts.service';
 import { Extracts } from '../models/extracts.interface';
 import { Observable } from 'rxjs';
+import { getRepository } from 'typeorm';
 
 @Controller('extracts')
 export class ExtractsController {
@@ -18,10 +19,43 @@ export class ExtractsController {
     // }
 
     @Get()
-    async consultarOpcoes(@Query('userOptions') userOptions: string) {
+    async consultarOpcoes(@Query('userOptions') userOptions: string, @Query('filterData') filterData: string) {
         let query: string = '';
 
+        //(en) Checks if there is a value other than doc_type.
         const hasOtherValue = userOptions.split(',').some(option => option !== 'doc_type');
+
+        //(en) Gets the current date.
+        const currentDate = new Date();
+
+        //(en) Converts the current date to a string.
+        const formattedDate = currentDate.toISOString();
+
+        //(en) Takes the date provided by the user and puts it in an array.
+        const filterDataArray = filterData.split(',');
+
+        //(en) Separates the start and end dates.
+        let startDateFormated = new Date(filterDataArray[0]);
+        let endDateFormated = new Date(filterDataArray[1]);
+
+        //(en) Variables that will be used in the database queries.
+        let startDate: string = '';
+        let endDate: string = '';
+
+        //(en) If the user does not provide a date.
+        if (filterData === '') {
+            //(en) Sets the start date as 2000/01/01. 
+            startDate = '2000-01-01T00:00:00.000Z';
+            //(en) Sets the end date as the current date.
+            endDate = formattedDate;
+        } else {
+            //(en) Sets the dates with the values provided by the user, converting them to strings.
+            startDate = startDateFormated.toISOString();
+            endDate = endDateFormated.toISOString();
+        }
+
+        console.log('start: ' + startDate)
+        console.log('end: ' + endDate)
 
         if (userOptions.includes('pages_process') && userOptions.includes('doc_type')) {
             query = `
@@ -37,9 +71,10 @@ export class ExtractsController {
                         ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
                     END AS "Tipo de Documento"
                 FROM extracts AS e
+                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
                 GROUP BY e.doc_type
             `;
-        }  else if (userOptions.includes('doc_type') && userOptions.includes('name')) {
+        } else if (userOptions.includes('doc_type') && userOptions.includes('name')) {
             query = `
                 SELECT 
                     count(e.doc_type)       AS "Documentos processados",
@@ -50,6 +85,7 @@ export class ExtractsController {
                     users AS u
                 ON
                     u.id = e.user_id
+                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
                 GROUP BY
                     u.name
             `
@@ -64,6 +100,7 @@ export class ExtractsController {
                     users AS u
                 ON
                     u.id = e.user_id
+                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
                 GROUP BY
                     u.name
             `
@@ -83,6 +120,7 @@ export class ExtractsController {
                     users AS u
                 ON
                     u.id = e.user_id
+                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
                 GROUP BY
                     u.segment
             `
@@ -102,10 +140,11 @@ export class ExtractsController {
                     users AS u
                 ON
                     u.id = e.user_id
+                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
                 GROUP BY
                     u.segment
             `
-        } else if (hasOtherValue === false){
+        } else if (hasOtherValue === false) {
             query = `
                 SELECT 
                     count(e.doc_type)                         AS "Documentos processados",
@@ -119,9 +158,11 @@ export class ExtractsController {
                         ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
                     END AS "Tipo de Documento"
                 FROM extracts AS e
+                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
                 GROUP BY e.doc_type
             `;
         }
+
         // Construa a consulta SQL dinâmica aqui
         return this.extractsService.executarConsulta(query);
     }
