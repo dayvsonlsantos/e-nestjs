@@ -54,117 +54,117 @@ export class ExtractsController {
             endDate = endDateFormated.toISOString();
         }
 
-        console.log('start: ' + startDate)
-        console.log('end: ' + endDate)
+        try {
+            if (userOptions.includes('pages_process') && userOptions.includes('doc_type')) {
+                query = `
+                    SELECT 
+                        sum(e.pages_process)                         AS "Páginas Processadas",
+                        CASE
+                            WHEN e.doc_type = 'CNH' THEN UPPER(e.doc_type)
+                            WHEN e.doc_type = 'POSICAO_CONSOLIDADA' THEN REPLACE(e.doc_type, 'POSICAO_CONSOLIDADA', 'Posição Consolidada')
+                            WHEN e.doc_type = 'FATURA_ENERGIA' THEN REPLACE(e.doc_type, 'FATURA_ENERGIA', 'Fatura de Energia')
+                            WHEN e.doc_type = 'DECLARACAO_IR' THEN REPLACE(e.doc_type, 'DECLARACAO_IR', 'Declaração de Imposto de Renda')
+                            WHEN e.doc_type = 'COMPROVANTE_RESIDENCIA' THEN REPLACE(e.doc_type, 'COMPROVANTE_RESIDENCIA', 'Comprovante de Residência')
+                            WHEN e.doc_type = 'BALANCO_PATRIMONIAL' THEN REPLACE(e.doc_type, 'BALANCO_PATRIMONIAL', 'Balanço Patrimonial')
+                            ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
+                        END AS "Tipo de Documento"
+                    FROM extracts AS e
+                    WHERE e.created_at >= '${startDate}' AND e.created_at <= '${endDate}'
+                    GROUP BY e.doc_type
+                `;
+            } else if (userOptions.includes('doc_type') && userOptions.includes('name')) {
+                query = `
+                    SELECT 
+                        count(e.doc_type)       AS "Documentos processados",
+                        u.name                  AS "Usuário"
+                    FROM 
+                        extracts AS e
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE e.created_at >= '${startDate}' AND e.created_at <= '${endDate}'
+                    GROUP BY
+                        u.name
+                `
+            } else if (userOptions.includes('pages_process') && userOptions.includes('name')) {
+                query = `
+                    SELECT 
+                        sum(e.pages_process)        AS "Páginas Processadas",
+                        u.name                      AS "Usuário"
+                    FROM 
+                        extracts AS e
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE e.created_at >= '${startDate}' AND e.created_at <= '${endDate}'
+                    GROUP BY
+                        u.name
+                `
+            } else if (userOptions.includes('pages_process') && userOptions.includes('segment')) {
+                query = `
+                    SELECT 
+                        sum(e.pages_process)        AS "Páginas Processadas",
+                        CASE
+                            WHEN u.segment = 'imobiliaria' THEN REPLACE (u.segment, 'imobiliaria', 'Imobiliária')
+                            WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
+                            WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
+                            WHEN u.segment = 'banco' THEN INITCAP (u.segment)
+                        END AS "Segmento"
+                    FROM 
+                        extracts AS e
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE e.created_at >= '${startDate}' AND e.created_at <= '${endDate}'
+                    GROUP BY
+                        u.segment
+                `
+            } else if (userOptions.includes('doc_type') && userOptions.includes('segment')) {
+                query = `
+                    SELECT 
+                        count(e.doc_type)        AS "Documentos processados",
+                        CASE
+                            WHEN u.segment = 'imobiliaria' THEN REPLACE (u.segment, 'imobiliaria', 'Imobiliária')
+                            WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
+                            WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
+                            WHEN u.segment = 'banco' THEN INITCAP (u.segment)
+                        END AS "Segmento"
+                    FROM 
+                        extracts AS e
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE e.created_at >= '${startDate}' AND e.created_at <= '${endDate}'
+                    GROUP BY
+                        u.segment
+                `
+            } else if (hasOtherValue === false) {
+                query = `
+                    SELECT 
+                        count(e.doc_type)                         AS "Documentos processados",
+                        CASE
+                            WHEN e.doc_type = 'CNH' THEN UPPER(e.doc_type)
+                            WHEN e.doc_type = 'POSICAO_CONSOLIDADA' THEN REPLACE(e.doc_type, 'POSICAO_CONSOLIDADA', 'Posição Consolidada')
+                            WHEN e.doc_type = 'FATURA_ENERGIA' THEN REPLACE(e.doc_type, 'FATURA_ENERGIA', 'Fatura de Energia')
+                            WHEN e.doc_type = 'DECLARACAO_IR' THEN REPLACE(e.doc_type, 'DECLARACAO_IR', 'Declaração de Imposto de Renda')
+                            WHEN e.doc_type = 'COMPROVANTE_RESIDENCIA' THEN REPLACE(e.doc_type, 'COMPROVANTE_RESIDENCIA', 'Comprovante de Residência')
+                            WHEN e.doc_type = 'BALANCO_PATRIMONIAL' THEN REPLACE(e.doc_type, 'BALANCO_PATRIMONIAL', 'Balanço Patrimonial')
+                            ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
+                        END AS "Tipo de Documento"
+                    FROM extracts AS e
+                    WHERE e.created_at >= '${startDate}' AND e.created_at <= '${endDate}'
+                    GROUP BY e.doc_type
+                `;
+            }
 
-        if (userOptions.includes('pages_process') && userOptions.includes('doc_type')) {
-            query = `
-                SELECT 
-                    sum(e.pages_process)                         AS "Páginas Processadas",
-                    CASE
-                        WHEN e.doc_type = 'CNH' THEN UPPER(e.doc_type)
-                        WHEN e.doc_type = 'POSICAO_CONSOLIDADA' THEN REPLACE(e.doc_type, 'POSICAO_CONSOLIDADA', 'Posição Consolidada')
-                        WHEN e.doc_type = 'FATURA_ENERGIA' THEN REPLACE(e.doc_type, 'FATURA_ENERGIA', 'Fatura de Energia')
-                        WHEN e.doc_type = 'DECLARACAO_IR' THEN REPLACE(e.doc_type, 'DECLARACAO_IR', 'Declaração de Imposto de Renda')
-                        WHEN e.doc_type = 'COMPROVANTE_RESIDENCIA' THEN REPLACE(e.doc_type, 'COMPROVANTE_RESIDENCIA', 'Comprovante de Residência')
-                        WHEN e.doc_type = 'BALANCO_PATRIMONIAL' THEN REPLACE(e.doc_type, 'BALANCO_PATRIMONIAL', 'Balanço Patrimonial')
-                        ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
-                    END AS "Tipo de Documento"
-                FROM extracts AS e
-                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
-                GROUP BY e.doc_type
-            `;
-        } else if (userOptions.includes('doc_type') && userOptions.includes('name')) {
-            query = `
-                SELECT 
-                    count(e.doc_type)       AS "Documentos processados",
-                    u.name                  AS "Usuário"
-                FROM 
-                    extracts AS e
-                JOIN
-                    users AS u
-                ON
-                    u.id = e.user_id
-                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
-                GROUP BY
-                    u.name
-            `
-        } else if (userOptions.includes('pages_process') && userOptions.includes('name')) {
-            query = `
-                SELECT 
-                    sum(e.pages_process)        AS "Páginas Processadas",
-                    u.name                      AS "Usuário"
-                FROM 
-                    extracts AS e
-                JOIN
-                    users AS u
-                ON
-                    u.id = e.user_id
-                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
-                GROUP BY
-                    u.name
-            `
-        } else if (userOptions.includes('pages_process') && userOptions.includes('segment')) {
-            query = `
-                SELECT 
-                    sum(e.pages_process)        AS "Páginas Processadas",
-                    CASE
-                        WHEN u.segment = 'imobiliaria' THEN REPLACE (u.segment, 'imobiliaria', 'Imobiliária')
-                        WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
-                        WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
-                        WHEN u.segment = 'banco' THEN INITCAP (u.segment)
-                    END AS "Segmento"
-                FROM 
-                    extracts AS e
-                JOIN
-                    users AS u
-                ON
-                    u.id = e.user_id
-                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
-                GROUP BY
-                    u.segment
-            `
-        } else if (userOptions.includes('doc_type') && userOptions.includes('segment')) {
-            query = `
-                SELECT 
-                    count(e.doc_type)        AS "Documentos processados",
-                    CASE
-                        WHEN u.segment = 'imobiliaria' THEN REPLACE (u.segment, 'imobiliaria', 'Imobiliária')
-                        WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
-                        WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
-                        WHEN u.segment = 'banco' THEN INITCAP (u.segment)
-                    END AS "Segmento"
-                FROM 
-                    extracts AS e
-                JOIN
-                    users AS u
-                ON
-                    u.id = e.user_id
-                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
-                GROUP BY
-                    u.segment
-            `
-        } else if (hasOtherValue === false) {
-            query = `
-                SELECT 
-                    count(e.doc_type)                         AS "Documentos processados",
-                    CASE
-                        WHEN e.doc_type = 'CNH' THEN UPPER(e.doc_type)
-                        WHEN e.doc_type = 'POSICAO_CONSOLIDADA' THEN REPLACE(e.doc_type, 'POSICAO_CONSOLIDADA', 'Posição Consolidada')
-                        WHEN e.doc_type = 'FATURA_ENERGIA' THEN REPLACE(e.doc_type, 'FATURA_ENERGIA', 'Fatura de Energia')
-                        WHEN e.doc_type = 'DECLARACAO_IR' THEN REPLACE(e.doc_type, 'DECLARACAO_IR', 'Declaração de Imposto de Renda')
-                        WHEN e.doc_type = 'COMPROVANTE_RESIDENCIA' THEN REPLACE(e.doc_type, 'COMPROVANTE_RESIDENCIA', 'Comprovante de Residência')
-                        WHEN e.doc_type = 'BALANCO_PATRIMONIAL' THEN REPLACE(e.doc_type, 'BALANCO_PATRIMONIAL', 'Balanço Patrimonial')
-                        ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
-                    END AS "Tipo de Documento"
-                FROM extracts AS e
-                WHERE e.created_at > '${startDate}' AND e.created_at < '${endDate}'
-                GROUP BY e.doc_type
-            `;
+            return this.extractsService.executarConsulta(query);
+        } catch (error) {
+            console.error('Erro ao executar consulta:', error);
         }
-
-        // Construa a consulta SQL dinâmica aqui
-        return this.extractsService.executarConsulta(query);
     }
 
     @Get('/getTables')
@@ -194,7 +194,7 @@ export class ExtractsController {
             table_schema = 'public'
         AND
             table_name = '${tableSelected}';
-        `; // Construa a consulta SQL dinâmica aqui
+        `;
         return this.extractsService.serv_getColumns(query);
     }
 
