@@ -80,7 +80,7 @@ export class ExtractsController {
                     WHERE e.created_at >= '${startDate}' AND e.created_at <= '${endDate}'
                     GROUP BY e.doc_type
                 `;
-            } else if (userOptions.includes('doc_type') && userOptions.includes('name') && filterUserOptionsArray[0] === '') {
+            } else if (userOptions.includes('doc_count') && userOptions.includes('name') && filterUserOptionsArray[0] === '') {
                 query = `
                     SELECT 
                         count(e.doc_type)       AS "Documentos processados",
@@ -130,7 +130,7 @@ export class ExtractsController {
                     GROUP BY
                         u.segment
                 `
-            } else if (userOptions.includes('doc_type') && userOptions.includes('segment') && filterUserOptionsArray[0] === '') {
+            } else if (userOptions.includes('doc_count') && userOptions.includes('segment') && filterUserOptionsArray[0] === '') {
                 query = `
                     SELECT 
                         count(e.doc_type)        AS "Documentos processados",
