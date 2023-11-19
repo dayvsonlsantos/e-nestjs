@@ -165,7 +165,7 @@ export class ExtractsController {
                     GROUP BY
                         u.segment
                 `
-            } else if (userOptions.selectedOptions.includes('doc_type') && userOptions.selectedOptions.includes('doc_count') && userOptions.aggregate === 'avg') {
+            } else if (userOptions.selectedOptions.includes('doc_type') && userOptions.selectedOptions.includes('doc_count') && userOptions.aggregate === '') {
                 query = `
                     SELECT 
                         count(e.doc_type)                         AS "Documentos processados",
@@ -206,7 +206,7 @@ export class ExtractsController {
 
 
     @Get('/getColumns')
-    async getColumns(@Query('tableSelected') tableSelected: string) {
+    async getColumns(@Query('tableOption') tableOption: string) {
         const query = `
         SELECT 
             column_name
@@ -215,7 +215,7 @@ export class ExtractsController {
         WHERE 
             table_schema = 'public'
         AND
-            table_name = '${tableSelected}';
+            table_name = '${tableOption}';
         `;
         return this.extractsService.serv_getColumns(query);
     }
