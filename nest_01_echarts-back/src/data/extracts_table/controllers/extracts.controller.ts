@@ -390,7 +390,7 @@ export class ExtractsController {
         ORDER BY 
             table_name;
         `;
-        return this.extractsService.serv_getTables(query);
+        return this.extractsService.executarConsulta(query);
     }
 
 
@@ -406,7 +406,51 @@ export class ExtractsController {
         AND
             table_name = '${tableOption}';
         `;
-        return this.extractsService.serv_getColumns(query);
+        return this.extractsService.executarConsulta(query);
+    }
+
+    @Get('/getUsers')
+    async getUsers() {
+        const query = `
+            SELECT 
+                INITCAP(name) as column_name
+            FROM 
+                users
+            GROUP BY users.name
+        `;
+        return this.extractsService.executarConsulta(query);
+    }
+
+    @Get('/getSegments')
+    async getSegments() {
+        const query = `
+            SELECT 
+                INITCAP(segment) as column_name
+            FROM 
+                users
+            GROUP BY users.segment
+        `;
+        return this.extractsService.executarConsulta(query);
+    }
+
+    @Get('/getDocTypes')
+    async getDocTypes() {
+        const query = `
+            SELECT 
+                CASE
+                    WHEN e.doc_type = 'CNH' THEN UPPER(e.doc_type)
+                    WHEN e.doc_type = 'POSICAO_CONSOLIDADA' THEN REPLACE(e.doc_type, 'POSICAO_CONSOLIDADA', 'Posição Consolidada')
+                    WHEN e.doc_type = 'FATURA_ENERGIA' THEN REPLACE(e.doc_type, 'FATURA_ENERGIA', 'Fatura de Energia')
+                    WHEN e.doc_type = 'DECLARACAO_IR' THEN REPLACE(e.doc_type, 'DECLARACAO_IR', 'Declaração de Imposto de Renda')
+                    WHEN e.doc_type = 'COMPROVANTE_RESIDENCIA' THEN REPLACE(e.doc_type, 'COMPROVANTE_RESIDENCIA', 'Comprovante de Residência')
+                    WHEN e.doc_type = 'BALANCO_PATRIMONIAL' THEN REPLACE(e.doc_type, 'BALANCO_PATRIMONIAL', 'Balanço Patrimonial')
+                    ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
+                END AS column_name
+            FROM 
+                extracts as e
+            GROUP BY e.doc_type
+        `;
+        return this.extractsService.executarConsulta(query);
     }
 
 }
