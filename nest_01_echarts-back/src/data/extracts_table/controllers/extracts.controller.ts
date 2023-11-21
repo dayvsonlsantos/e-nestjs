@@ -26,6 +26,20 @@ export class ExtractsController {
 
         userOptions.selectedOptions = userOptions.selectedOptions.split(',');
 
+        let datePattern = 'MM/YY';
+
+        switch (userOptions.timeGrouping) {
+            case 'day':
+                datePattern = 'DD/MM/YY';
+                break;
+            case 'month':
+                datePattern = 'MM/YY';
+                break;
+            case 'year':
+                datePattern = 'YY';
+                break;
+        }
+
         try {
             if (userOptions.selectedOptions.includes('pages_process') && userOptions.selectedOptions.includes('doc_type') && userOptions.aggregate === 'sum') {
                 query = `
@@ -121,22 +135,26 @@ export class ExtractsController {
                         u.segment
                 `
             } else if (userOptions.selectedOptions.includes('created_at') && userOptions.selectedOptions.includes('pages_process') && userOptions.aggregate === 'sum') {
+
                 query = `
                     SELECT 
-                        TO_CHAR(DATE_TRUNC('day', created_at), 'DD/MM/YYYY') AS "Data de Criação",
-                        SUM(pages_process) AS "Páginas Processadas",
-                        (SELECT SUM(e2.pages_process) FROM extracts e2 WHERE e2.created_at <= e.created_at) AS "Páginas Acumulativas"
-                    FROM 
-                        extracts AS e
-                    JOIN
-                        users AS u
-                    ON
-                        u.id = e.user_id
-                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
-                    GROUP BY 
-                        e.created_at
+                        truncated_date AS "Data de Criação",
+                        SUM(pages_process) OVER (ORDER BY truncated_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS "Páginas Acumulativas"
+                    FROM (
+                        SELECT 
+                            TO_CHAR(DATE_TRUNC('${userOptions.timeGrouping}', e.created_at), '${datePattern}') AS truncated_date,
+                            SUM(e.pages_process) AS pages_process
+                        FROM 
+                            extracts as e
+                        JOIN
+                            users AS u ON u.id = e.user_id
+                        WHERE 
+                            ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
+                        GROUP BY 
+                            DATE_TRUNC('${userOptions.timeGrouping}', e.created_at)
+                    ) AS subquery
                     ORDER BY 
-                        e.created_at
+                        truncated_date;
                 `
             } else if (userOptions.selectedOptions.includes('pages_process') && userOptions.selectedOptions.includes('doc_type') && userOptions.aggregate === 'avg') {
                 query = `
@@ -370,7 +388,7 @@ export class ExtractsController {
                     LIMIT 1
                 `
             }
-            
+
 
             return this.extractsService.executarConsulta(query);
         } catch (error) {
