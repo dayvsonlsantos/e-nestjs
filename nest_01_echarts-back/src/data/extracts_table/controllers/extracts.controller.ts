@@ -182,7 +182,146 @@ export class ExtractsController {
                     WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
                     GROUP BY e.doc_type
                 `
+            } else if (userOptions.selectedOptions.includes('only_doc_count') && userOptions.aggregate === '') {
+                query = `
+                    SELECT 
+                        count(e.doc_type)       AS "Documentos processados"
+                    FROM 
+                        extracts AS e
+                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                `
+            } else if (userOptions.selectedOptions.includes('only_pages_process') && userOptions.aggregate === 'sum') {
+                query = `
+                    SELECT 
+                        sum(e.pages_process)        AS "Páginas Processadas"
+                    FROM 
+                        extracts AS e
+                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                `
+            } else if (userOptions.selectedOptions.includes('only_pages_process') && userOptions.aggregate === 'avg') {
+                query = `
+                    SELECT 
+                        ROUND(avg(e.pages_process),2)        AS "Páginas Processadas"
+                    FROM 
+                        extracts AS e
+                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                `
+            } else if (userOptions.selectedOptions.includes('most_analyzed_doc') && userOptions.aggregate === '') {
+                query = `
+                    SELECT 
+                        CASE
+                            WHEN e.doc_type = 'CNH' THEN UPPER(e.doc_type)
+                            WHEN e.doc_type = 'POSICAO_CONSOLIDADA' THEN REPLACE(e.doc_type, 'POSICAO_CONSOLIDADA', 'Posição Consolidada')
+                            WHEN e.doc_type = 'FATURA_ENERGIA' THEN REPLACE(e.doc_type, 'FATURA_ENERGIA', 'Fatura de Energia')
+                            WHEN e.doc_type = 'DECLARACAO_IR' THEN REPLACE(e.doc_type, 'DECLARACAO_IR', 'Declaração de Imposto de Renda')
+                            WHEN e.doc_type = 'COMPROVANTE_RESIDENCIA' THEN REPLACE(e.doc_type, 'COMPROVANTE_RESIDENCIA', 'Comprovante de Residência')
+                            WHEN e.doc_type = 'BALANCO_PATRIMONIAL' THEN REPLACE(e.doc_type, 'BALANCO_PATRIMONIAL', 'Balanço Patrimonial')
+                            ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
+                        END AS "Tipo de Documento"
+                    FROM 
+                        extracts AS e
+                    WHERE 
+                        e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    GROUP BY
+                        e.doc_type
+                    ORDER BY
+                        count(e.doc_type) desc
+                    LIMIT 1
+                `
+            } else if (userOptions.selectedOptions.includes('doc_most_analyzed_pages') && userOptions.aggregate === 'sum') {
+                query = `
+                    SELECT 
+                        sum(e.pages_process),
+                        CASE
+                            WHEN e.doc_type = 'CNH' THEN UPPER(e.doc_type)
+                            WHEN e.doc_type = 'POSICAO_CONSOLIDADA' THEN REPLACE(e.doc_type, 'POSICAO_CONSOLIDADA', 'Posição Consolidada')
+                            WHEN e.doc_type = 'FATURA_ENERGIA' THEN REPLACE(e.doc_type, 'FATURA_ENERGIA', 'Fatura de Energia')
+                            WHEN e.doc_type = 'DECLARACAO_IR' THEN REPLACE(e.doc_type, 'DECLARACAO_IR', 'Declaração de Imposto de Renda')
+                            WHEN e.doc_type = 'COMPROVANTE_RESIDENCIA' THEN REPLACE(e.doc_type, 'COMPROVANTE_RESIDENCIA', 'Comprovante de Residência')
+                            WHEN e.doc_type = 'BALANCO_PATRIMONIAL' THEN REPLACE(e.doc_type, 'BALANCO_PATRIMONIAL', 'Balanço Patrimonial')
+                            ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
+                        END AS "Tipo de Documento"
+                    FROM 
+                        extracts AS e
+                        WHERE 
+                        e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    GROUP BY
+                        e.doc_type
+                    ORDER BY
+                        sum(e.pages_process) desc
+                    LIMIT 1                    
+                `
+            } else if (userOptions.selectedOptions.includes('user_most_analyzed_doc') && userOptions.aggregate === '') {
+                query = `
+                SELECT 
+                    u.name                  AS "Usuário"
+                FROM 
+                    extracts AS e
+                JOIN
+                    users AS u
+                ON
+                    u.id = e.user_id
+                WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                GROUP BY
+                    u.name
+                ORDER BY
+                    count(e.doc_type) DESC
+                LIMIT 1
+                `
+            } else if (userOptions.selectedOptions.includes('user_most_analyzed_pages') && userOptions.aggregate === 'sum') {
+                query = `
+                    SELECT 
+                        u.name                  AS "Usuário"
+                    FROM 
+                        extracts AS e
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    GROUP BY
+                        u.name
+                    ORDER BY
+                        sum(e.pages_process) DESC
+                    LIMIT 1
+                `
+            } else if (userOptions.selectedOptions.includes('segment_most_analyzed_doc') && userOptions.aggregate === '') {
+                query = `
+                SELECT 
+                    u.segment                  AS "Segmento"
+                FROM 
+                    extracts AS e
+                JOIN
+                    users AS u
+                ON
+                    u.id = e.user_id
+                WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                GROUP BY
+                    u.segment
+                ORDER BY
+                    count(e.doc_type) DESC
+                LIMIT 1
+                `
+            } else if (userOptions.selectedOptions.includes('segment_most_analyzed_pages') && userOptions.aggregate === 'sum') {
+                query = `
+                    SELECT 
+                        u.segment                  AS "Segmento"
+                    FROM 
+                        extracts AS e
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    GROUP BY
+                        u.segment
+                    ORDER BY
+                        sum(e.pages_process) DESC
+                    LIMIT 1
+                `
             }
+            
+
             return this.extractsService.executarConsulta(query);
         } catch (error) {
             console.error('Erro ao executar consulta:', error);
