@@ -19,6 +19,9 @@ export class ExtractsController {
     async consultarOpcoes(@Query() userOptions: any) {
         console.log('testenovo', userOptions);
 
+        console.log(userOptions.specificFilter)
+        console.log(userOptions.cardValueID)
+
         let query: string = '';
 
         userOptions.selectedOptions = userOptions.selectedOptions.split(',');
@@ -38,7 +41,11 @@ export class ExtractsController {
                             ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
                         END AS "Tipo de Documento"
                     FROM extracts AS e
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}'
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY e.doc_type
                 `;
             } else if (userOptions.selectedOptions.includes('doc_count') && userOptions.selectedOptions.includes('name') && userOptions.aggregate === '') {
@@ -52,7 +59,7 @@ export class ExtractsController {
                         users AS u
                     ON
                         u.id = e.user_id
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                        WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY
                         u.name
                 `
@@ -67,7 +74,7 @@ export class ExtractsController {
                         users AS u
                     ON
                         u.id = e.user_id
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY
                         u.name
                 `
@@ -88,7 +95,7 @@ export class ExtractsController {
                         users AS u
                     ON
                         u.id = e.user_id
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY
                         u.segment
                 `
@@ -109,7 +116,7 @@ export class ExtractsController {
                         users AS u
                     ON
                         u.id = e.user_id
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY
                         u.segment
                 `
@@ -121,8 +128,11 @@ export class ExtractsController {
                         (SELECT SUM(e2.pages_process) FROM extracts e2 WHERE e2.created_at <= e.created_at) AS "Páginas Acumulativas"
                     FROM 
                         extracts AS e
-                    WHERE 
-                        e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY 
                         e.created_at
                     ORDER BY 
@@ -143,7 +153,11 @@ export class ExtractsController {
                         END AS "Tipo de Documento"
                     FROM 
                         extracts AS e
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY
                         e.doc_type
                 `
@@ -164,7 +178,7 @@ export class ExtractsController {
                         users AS u
                     ON
                         u.id = e.user_id
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY
                         u.segment
                 `
@@ -182,7 +196,11 @@ export class ExtractsController {
                             ELSE REPLACE(INITCAP(e.doc_type), '_', ' ')
                         END AS "Tipo de Documento"
                     FROM extracts AS e
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY e.doc_type
                 `
             } else if (userOptions.selectedOptions.includes('only_doc_count') && userOptions.aggregate === '') {
@@ -191,7 +209,11 @@ export class ExtractsController {
                         count(e.doc_type)       AS "Documentos processados"
                     FROM 
                         extracts AS e
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                 `
             } else if (userOptions.selectedOptions.includes('only_pages_process') && userOptions.aggregate === 'sum') {
                 query = `
@@ -199,7 +221,11 @@ export class ExtractsController {
                         sum(e.pages_process)        AS "Páginas Processadas"
                     FROM 
                         extracts AS e
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                 `
             } else if (userOptions.selectedOptions.includes('only_pages_process') && userOptions.aggregate === 'avg') {
                 query = `
@@ -207,7 +233,11 @@ export class ExtractsController {
                         ROUND(avg(e.pages_process),2)        AS "Páginas Processadas"
                     FROM 
                         extracts AS e
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                 `
             } else if (userOptions.selectedOptions.includes('most_analyzed_doc') && userOptions.aggregate === '') {
                 query = `
@@ -223,8 +253,11 @@ export class ExtractsController {
                         END AS "Tipo de Documento"
                     FROM 
                         extracts AS e
-                    WHERE 
-                        e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY
                         e.doc_type
                     ORDER BY
@@ -246,9 +279,11 @@ export class ExtractsController {
                         END AS "Tipo de Documento"
                     FROM 
                         extracts AS e
-                        WHERE 
-                        e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
-                    GROUP BY
+                    JOIN
+                        users AS u
+                    ON
+                        u.id = e.user_id
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                         e.doc_type
                     ORDER BY
                         sum(e.pages_process) desc
@@ -264,7 +299,7 @@ export class ExtractsController {
                     users AS u
                 ON
                     u.id = e.user_id
-                WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                 GROUP BY
                     u.name
                 ORDER BY
@@ -281,7 +316,7 @@ export class ExtractsController {
                         users AS u
                     ON
                         u.id = e.user_id
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY
                         u.name
                     ORDER BY
@@ -304,7 +339,7 @@ export class ExtractsController {
                     users AS u
                 ON
                     u.id = e.user_id
-                WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                 GROUP BY
                     u.segment
                 ORDER BY
@@ -327,7 +362,7 @@ export class ExtractsController {
                         users AS u
                     ON
                         u.id = e.user_id
-                    WHERE e.created_at >= '${userOptions.startDate}' AND e.created_at <= '${userOptions.endDate}}'
+                    WHERE ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                     GROUP BY
                         u.segment
                     ORDER BY
