@@ -80,6 +80,7 @@ export class ExtractsController {
                             WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
                             WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
                             WHEN u.segment = 'banco' THEN INITCAP (u.segment)
+                            ELSE INITCAP(u.segment)
                         END AS "Segmento"
                     FROM 
                         extracts AS e
@@ -100,6 +101,7 @@ export class ExtractsController {
                             WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
                             WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
                             WHEN u.segment = 'banco' THEN INITCAP (u.segment)
+                            ELSE INITCAP(u.segment)
                         END AS "Segmento"
                     FROM 
                         extracts AS e
@@ -154,6 +156,7 @@ export class ExtractsController {
                             WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
                             WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
                             WHEN u.segment = 'banco' THEN INITCAP (u.segment)
+                            ELSE INITCAP(u.segment)
                         END AS "Segmento"
                     FROM 
                         extracts AS e
@@ -288,7 +291,13 @@ export class ExtractsController {
             } else if (userOptions.selectedOptions.includes('segment_most_analyzed_doc') && userOptions.aggregate === '') {
                 query = `
                 SELECT 
-                    u.segment                  AS "Segmento"
+                    CASE
+                        WHEN u.segment = 'imobiliaria' THEN REPLACE (u.segment, 'imobiliaria', 'Imobiliária')
+                        WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
+                        WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
+                        WHEN u.segment = 'banco' THEN INITCAP (u.segment)
+                        ELSE INITCAP(u.segment)
+                    END AS "Segmento"
                 FROM 
                     extracts AS e
                 JOIN
@@ -305,7 +314,13 @@ export class ExtractsController {
             } else if (userOptions.selectedOptions.includes('segment_most_analyzed_pages') && userOptions.aggregate === 'sum') {
                 query = `
                     SELECT 
-                        u.segment                  AS "Segmento"
+                        CASE
+                            WHEN u.segment = 'imobiliaria' THEN REPLACE (u.segment, 'imobiliaria', 'Imobiliária')
+                            WHEN u.segment = 'construtora' THEN INITCAP (u.segment)
+                            WHEN u.segment = 'financeira' THEN INITCAP (u.segment)
+                            WHEN u.segment = 'banco' THEN INITCAP (u.segment)
+                            ELSE INITCAP(u.segment)
+                        END AS "Segmento"
                     FROM 
                         extracts AS e
                     JOIN
