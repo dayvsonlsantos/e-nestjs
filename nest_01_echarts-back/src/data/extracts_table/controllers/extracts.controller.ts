@@ -137,13 +137,9 @@ export class ExtractsController {
             } else if (userOptions.selectedOptions.includes('created_at') && userOptions.selectedOptions.includes('pages_process') && userOptions.aggregate === 'sum') {
 
                 query = `
-                    SELECT 
-                        truncated_date AS "Data de Criação",
-                        SUM(pages_process) OVER (ORDER BY truncated_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS "Páginas Acumulativas"
-                    FROM (
                         SELECT 
-                            TO_CHAR(DATE_TRUNC('${userOptions.timeGrouping}', e.created_at), '${datePattern}') AS truncated_date,
-                            SUM(e.pages_process) AS pages_process
+                            TO_CHAR(DATE_TRUNC('${userOptions.timeGrouping}', e.created_at), '${datePattern}') AS "Data de Criação",
+                            SUM(e.pages_process) AS "Páginas Acumulativas"
                         FROM 
                             extracts as e
                         JOIN
@@ -152,9 +148,39 @@ export class ExtractsController {
                             ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
                         GROUP BY 
                             DATE_TRUNC('${userOptions.timeGrouping}', e.created_at)
-                    ) AS subquery
-                    ORDER BY 
-                        truncated_date;
+                        ORDER BY DATE_TRUNC('${userOptions.timeGrouping}', e.created_at)
+                `
+            } else if (userOptions.selectedOptions.includes('created_at') && userOptions.selectedOptions.includes('pages_process') && userOptions.aggregate === 'avg') {
+
+                query = `
+                    SELECT 
+                        TO_CHAR(DATE_TRUNC('${userOptions.timeGrouping}', e.created_at), '${datePattern}') AS "Data de Criação",
+                        ROUND(avg(e.pages_process),2) AS "Páginas Acumulativas"
+                    FROM 
+                        extracts as e
+                    JOIN
+                        users AS u ON u.id = e.user_id
+                    WHERE 
+                        ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
+                    GROUP BY 
+                        DATE_TRUNC('${userOptions.timeGrouping}', e.created_at)
+                    ORDER BY DATE_TRUNC('${userOptions.timeGrouping}', e.created_at)
+                `
+            } else if (userOptions.selectedOptions.includes('created_at') && userOptions.selectedOptions.includes('doc_count') && userOptions.aggregate === '') {
+
+                query = `
+                    SELECT 
+                        TO_CHAR(DATE_TRUNC('${userOptions.timeGrouping}', e.created_at), '${datePattern}') AS "Data de Criação",
+                        COUNT(e.doc_type) AS "Páginas Acumulativas"
+                    FROM 
+                        extracts as e
+                    JOIN
+                        users AS u ON u.id = e.user_id
+                    WHERE 
+                        ((e.created_at >= '${userOptions.startDate}') AND (e.created_at <= '${userOptions.endDate}')) AND ${userOptions.specificFilter}
+                    GROUP BY 
+                        DATE_TRUNC('${userOptions.timeGrouping}', e.created_at)
+                    ORDER BY DATE_TRUNC('${userOptions.timeGrouping}', e.created_at)
                 `
             } else if (userOptions.selectedOptions.includes('pages_process') && userOptions.selectedOptions.includes('doc_type') && userOptions.aggregate === 'avg') {
                 query = `
